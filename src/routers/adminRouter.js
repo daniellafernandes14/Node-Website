@@ -1,18 +1,19 @@
 const express = require('express');
-const sessionsRouter = express.Router();
-const debug = require('debug')('app:sessionsRouter');
+const debug = require('debug')('app:adminRouter');
 const { MongoClient } = require('mongodb');
 const sessions = require('../data/sessions.json');
 require('dotenv').config();
 
+const adminRouter = express.Router();
+
 const password = process.env.PASSWORD;
 
-sessionsRouter.route('/')
+adminRouter.route('/')
   .get((req, res) => {
     const url = `mongodb+srv://fernandesdaniella:${password}@daniellatools.kljessr.mongodb.net/?retryWrites=true&w=majority`
     const dbName = 'daniellaTools';
 
-    (async function mongo() {
+    (async function mongo(){
       let client;
       try {
         client = await MongoClient.connect(url);
@@ -20,20 +21,12 @@ sessionsRouter.route('/')
 
         const db = client.db(dbName);
 
-        const sessions = await db.collection('sessions').find().toArray();
-        res.render('sessions', { sessions });
+        const response = await db.collection('sessions').insertMany(sessions);
+        res.json = response;
       } catch (error) {
         debug(error.stack);
       }
     }())
-  })
+  });
 
-sessionsRouter.route('/:id')
-  .get((req, res) => {
-    const id = req.params.id;
-    ; res.render('session', {
-      session: sessions[id],
-    });
-  })
-
-  module.exports = sessionsRouter;
+module.exports = adminRouter;
